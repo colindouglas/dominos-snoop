@@ -1,0 +1,17 @@
+[[contacts]]
+name = "Alice"
+phone = "4165551234"
+
+[[contacts]]
+name = "Bob"
+phone = "6475554321"
+
+[stores]
+"10101" = "Yonge Street"
+
+[pushover]
+user_key = "uXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+app_token = "aXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+[poll]
+interval_minutes = 2
