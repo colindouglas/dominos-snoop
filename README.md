@@ -33,7 +33,7 @@ interval_minutes = 2
 
 - **contacts**: one entry per phone number to track
 - **stores**: optional friendly names for store IDs (falls back to the raw ID if not listed)
-- **pushover**: credentials from [pushover.net](https://pushover.net) — omit the section to disable notifications
+- **pushover**: credentials from [pushover.net](https://pushover.net); omit to disable notifications
 - **poll.interval_minutes**: how often to check (default: 2)
 
 ## Docker

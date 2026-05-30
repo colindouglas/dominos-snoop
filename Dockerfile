@@ -10,4 +10,4 @@ COPY tracker.py ./
 ENV DATA_DIR=/data
 VOLUME /data
 
-CMD ["uv", "run", "dominos-snoop"]
+CMD ["uv", "run", "python", "tracker.py"]
