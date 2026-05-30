@@ -10,6 +10,7 @@ Steps:
 """
 
 import json
+import os
 import time
 import tomllib
 import uuid
@@ -19,7 +20,10 @@ import requests
 
 BASE_URL = "https://api.dominos.ca/tracker-presentation-service"
 PUSHOVER_URL = "https://api.pushover.net/1/messages.json"
-STATE_FILE = Path("state.json")
+
+DATA_DIR = Path(os.environ.get("DATA_DIR", "."))
+CONFIG_FILE = DATA_DIR / "config.toml"
+STATE_FILE = DATA_DIR / "state.json"
 
 _DPZ_D = str(uuid.uuid4())
 
@@ -118,7 +122,7 @@ def poll(config: dict) -> None:
 
 
 def main() -> None:
-    with open("config.toml", "rb") as f:
+    with open(CONFIG_FILE, "rb") as f:
         config = tomllib.load(f)
 
     interval = config.get("poll", {}).get("interval_minutes", 2) * 60
