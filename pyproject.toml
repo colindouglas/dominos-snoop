@@ -1,8 +1,14 @@
 [project]
 name = "dominos-snoop"
 version = "0.1.0"
-description = "Add your description here"
+description = "Poll the Dominos Canada order tracker and send Pushover notifications on status changes"
 requires-python = ">=3.12"
 dependencies = [
     "requests>=2.34.2",
 ]
+
+[project.scripts]
+dominos-snoop = "tracker:main"
+
+[tool.uv]
+package = true

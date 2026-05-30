@@ -117,7 +117,7 @@ def poll(config: dict) -> None:
     save_state(state)
 
 
-if __name__ == "__main__":
+def main() -> None:
     with open("config.toml", "rb") as f:
         config = tomllib.load(f)
 
@@ -148,3 +148,7 @@ if __name__ == "__main__":
 
         print(f"Sleeping {sleep_secs}s...")
         time.sleep(sleep_secs)
+
+
+if __name__ == "__main__":
+    main()
