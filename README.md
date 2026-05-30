@@ -1,14 +1,15 @@
 # Domino's Snoop
 
-Polls the Dominos Canada order tracker and sends Pushover notifications when a new order is detected or its status changes.
+Did you know that the API for the Domino's pizza tracker is completely open and you
+can check on the order status of anyone who's phone number you know?
+
+Oh, you did?
+
+Yeah, me too.
 
 ## Setup
 
 Copy the example config and fill in your details:
-
-```bash
-cp config.toml.example config.toml
-```
 
 ```toml
 [[contacts]]
@@ -34,12 +35,6 @@ interval_minutes = 2
 - **stores**: optional friendly names for store IDs (falls back to the raw ID if not listed)
 - **pushover**: credentials from [pushover.net](https://pushover.net) — omit the section to disable notifications
 - **poll.interval_minutes**: how often to check (default: 2)
-
-## Running
-
-```bash
-uv run dominos-snoop
-```
 
 ## Docker
 
