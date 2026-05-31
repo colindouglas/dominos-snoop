@@ -1,11 +1,13 @@
-# Domino's Snoop
+# Pizza Tracker Tracker
 
-Did you know that the API for the Domino's pizza tracker is completely open and you
-can check on the order status of anyone who's phone number you know?
+Did you know that the API for a large Canadian pizza chain's pizza tracker is completely
+open and you can check on the order status of anyone who's phone number you know?
 
 Oh, you did?
 
-Yeah, me too.
+Anyway, don't do anything evil with this.
+
+🎲
 
 ## Setup
 
@@ -41,8 +43,8 @@ interval_minutes = 2
 Place `config.toml` in your appdata folder, then mount it at `/data`:
 
 ```bash
-docker build -t dominos-snoop .
-docker run -v /mnt/user/appdata/dominos-snoop:/data dominos-snoop
+docker build -t pizza-tracker-tracker .
+docker run -v /mnt/user/appdata/pizza-tracker-tracker:/data pizza-tracker-tracker
 ```
 
 `state.json` will be created automatically in the same folder on first run. The `DATA_DIR` env var controls the data path (default: `/data` in the container, `.` when running locally).
