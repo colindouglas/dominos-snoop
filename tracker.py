@@ -14,6 +14,7 @@ import os
 import time
 import tomllib
 import uuid
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import requests
@@ -57,6 +58,70 @@ def get_order_detail(track_path: str) -> dict:
     return response.json()
 
 
+class NotificationProvider(ABC):
+    @abstractmethod
+    def send(self, title: str, message: str) -> None:
+        pass
+
+class PushoverProvider(NotificationProvider):
+    def __init__(self, user_key: str, app_token: str):
+        self.user_key = user_key
+        self.app_token = app_token
+        self.url = PUSHOVER_URL
+
+    def send(self, title: str, message: str) -> None:
+        response = requests.post(
+            self.url,
+            data={
+                "token": self.app_token,
+                "user": self.user_key,
+                "title": title,
+                "message": message,
+            },
+        )
+        response.raise_for_status()
+
+class NtfyProvider(NotificationProvider):
+    def __init__(self, base_url: str, topic_name: str, auth_token: str):
+        self.base_url = base_url.rstrip("/")
+        self.topic_name = topic_name
+        self.auth_token = auth_token
+        self.url = f"{self.base_url}/{self.topic_name}"
+
+    def send(self, title: str, message: str) -> None:
+        headers = {"Title": title, "Message": message}
+        headers["Authorization"] = f"Bearer {self.auth_token}"
+        
+        response = requests.post(self.url, data=message, headers=headers)
+        response.raise_for_status()
+
+class NotificationService:
+    def __init__(self, config: dict):
+        self.providers: list[NotificationProvider] = []
+        
+        if "pushover" in config:
+            pushover_cfg = config["pushover"]
+            self.providers.append(
+                PushoverProvider(pushover_cfg["user_key"], pushover_cfg["app_token"])
+            )
+            
+        if "ntfy" in config:
+            ntfy_cfg = config["ntfy"]
+            self.providers.append(
+                NtfyProvider(
+                    ntfy_cfg["base_url"],
+                    ntfy_cfg["topic_name"],
+                    ntfy_cfg.get("auth_token")
+                )
+            )
+
+    def notify(self, title: str, message: str) -> None:
+        for provider in self.providers:
+            try:
+                provider.send(title, message)
+            except Exception as e:
+                print(f"Failed to send notification via {provider.__class__.__name__}: {e}")
+
 def send_notification(user_key: str, app_token: str, title: str, message: str) -> None:
     response = requests.post(
         PUSHOVER_URL,
@@ -81,9 +146,8 @@ def save_state(state: dict[str, str]) -> None:
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 
-def poll(config: dict) -> None:
+def poll(config: dict, notifier: NotificationService) -> None:
     stores: dict[str, str] = config.get("stores", {})
-    pushover = config.get("pushover")
     state = load_state()
 
     for contact in config["contacts"]:
@@ -103,19 +167,16 @@ def poll(config: dict) -> None:
 
                 last_status = state.get(order_id)
                 if status != last_status:
-                    if pushover:
-                        title = (
-                            f"New Dominos order for {contact['name']}"
-                            if last_status is None
-                            else f"Order update for {contact['name']}"
-                        )
-                        send_notification(
-                            pushover["user_key"],
-                            pushover["app_token"],
-                            title=title,
-                            message=f"{store_name}: {order['OrderDescription']}\nStatus: {status}",
-                        )
-                        print(f"Notification sent: {last_status!r} -> {status!r}")
+                    title = (
+                        f"New Dominos order for {contact['name']}"
+                        if last_status is None
+                        else f"Order update for {contact['name']}"
+                    )
+                    notifier.notify(
+                        title=title,
+                        message=f"{store_name}: {order['OrderDescription']}\nStatus: {status}",
+                    )
+                    print(f"Notification sent: {last_status!r} -> {status!r}")
                     state[order_id] = status
 
     save_state(state)
@@ -128,24 +189,22 @@ def main() -> None:
     interval = config.get("poll", {}).get("interval_minutes", 2) * 60
 
     pushover = config.get("pushover")
+    notifier = NotificationService(config)
     backoff = 0
     MAX_BACKOFF = 30 * 60
 
     while True:
         print(f"--- Polling at {time.strftime('%H:%M:%S')} ---")
         try:
-            poll(config)
+            poll(config, notifier)
             backoff = 0
             sleep_secs = interval
         except Exception as e:
             print(f"Error: {e}")
-            if pushover:
-                send_notification(
-                    pushover["user_key"],
-                    pushover["app_token"],
-                    title="Dominos tracker error",
-                    message=str(e),
-                )
+            notifier.notify(
+                title="Dominos tracker error",
+                message=str(e),
+            )
             backoff = min(MAX_BACKOFF, backoff * 2 if backoff else 30)
             sleep_secs = backoff
             print(f"Backing off for {sleep_secs}s...")

@@ -13,5 +13,10 @@ phone = "6475554321"
 user_key = "uXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 app_token = "aXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
+[ntfy]
+base_url = "https://your.ntfy.sh.host"
+topic_name = "abc123"
+auth_token = "eWYjASDFzxcv"
+
 [poll]
 interval_minutes = 2
